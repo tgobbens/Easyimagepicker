@@ -1,0 +1,6 @@
+<resources>
+    <string name="eip_select_from_gallery">Select from gallery</string>
+    <string name="eip_use_camera">Camera</string>
+    <string name="eip_dialog_title">Choose</string>
+    <string name="eip_dialog_cancel">Cancel</string>
+</resources>

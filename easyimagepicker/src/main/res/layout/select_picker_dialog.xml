@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:apps="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/select_camera_icon"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_photo_camera_black_24dp" />
+
+    <TextView
+        android:id="@+id/select_camera"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:text="@string/eip_use_camera"
+        app:layout_constraintBottom_toBottomOf="@+id/select_camera_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/select_camera_icon"
+        app:layout_constraintTop_toTopOf="@+id/select_camera_icon" />
+
+    <View
+        android:id="@+id/select_camera_region"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="@+id/select_camera_icon"
+        app:layout_constraintEnd_toEndOf="@+id/select_camera"
+        app:layout_constraintStart_toStartOf="@+id/select_camera_icon"
+        app:layout_constraintTop_toTopOf="@+id/select_camera_icon" />
+
+    <ImageView
+        android:id="@+id/select_gallery_icon"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/select_camera"
+        app:srcCompat="@drawable/ic_photo_library_black_24dp" />
+
+    <TextView
+        android:id="@+id/select_gallery"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:text="@string/eip_select_from_gallery"
+        app:layout_constraintBottom_toBottomOf="@+id/select_gallery_icon"
+        app:layout_constraintEnd_toEndOf="@+id/select_camera"
+        app:layout_constraintStart_toEndOf="@+id/select_gallery_icon"
+        app:layout_constraintTop_toTopOf="@+id/select_gallery_icon"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <View
+        android:id="@+id/select_gallery_region"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="@+id/select_gallery_icon"
+        app:layout_constraintEnd_toEndOf="@+id/select_gallery"
+        app:layout_constraintStart_toStartOf="@+id/select_gallery_icon"
+        app:layout_constraintTop_toTopOf="@+id/select_gallery_icon" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
