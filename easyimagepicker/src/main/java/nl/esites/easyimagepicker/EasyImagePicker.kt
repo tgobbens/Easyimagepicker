@@ -1,6 +1,5 @@
 package nl.esites.easyimagepicker
 
-
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -20,7 +19,6 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class EasyImagePicker private constructor(builder: Builder, savedInstanceState: Bundle?){
 
     companion object {
@@ -32,6 +30,10 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         const val DEFAULT_MAX_IMAGE_DIMENSION = 1024
     }
 
+    /**
+     * BOTH will show a dialog before showing the gallery or camera
+     * GALLERY_ONLY and CAMERA_ONLY will directly show
+     */
     enum class MODE {
         GALLERY_ONLY,
         CAMERA_ONLY,
@@ -72,31 +74,57 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         var maxImageDimension: Int = DEFAULT_MAX_IMAGE_DIMENSION
             private set
 
+        var requestCameraCode: Int = DEFAULT_CAMERA_REQUEST_CODE
+            private set
+
+        var requestGalleryCode: Int = DEFAULT_GALLERY_REQUEST_CODE
+            private set
+
         @StyleRes
         var themeResId: Int = 0
             private set
 
+        /**
+         * set the `MODE`, show a dialog or directly open camera or gallery
+         */
         fun mode(mode: MODE) =
             apply { this.mode = mode }
 
+        /**
+         * set the max image dimension for the resulting image
+         */
+        fun maxImageDimension(maxImageDimension: Int) =
+            apply { this.maxImageDimension = maxImageDimension }
+
+        /**
+         * set the theme for the dialog, (only used in `MODE.BOTH`)
+         */
         fun themeResId(@StyleRes themeResId: Int) =
             apply { this.themeResId = themeResId }
 
-        fun create(savedInstanceState: Bundle?): EasyImagePicker {
-            return create(savedInstanceState, DEFAULT_CAMERA_REQUEST_CODE, DEFAULT_GALLERY_REQUEST_CODE)
-        }
+        /**
+         * change the default camera intent request code
+         */
+        fun requestCameraCode(requestCameraCode: Int) =
+            apply { this.requestCameraCode = requestCameraCode }
 
-        @Suppress("MemberVisibilityCanBePrivate")
-        fun create(savedInstanceState: Bundle?,
-                   cameraRequestCode: Int,
-                   galleryRequestCode: Int
-        ) : EasyImagePicker {
-            this.cameraRequestCode = cameraRequestCode
-            this.galleryRequestCode = galleryRequestCode
+        /**
+         * change the default gallery intent request code
+         */
+        fun requestGalleryCode(requestGalleryCode: Int) =
+            apply { this.requestGalleryCode = requestGalleryCode }
+
+        /**
+         * create an `EasyImagePicker` instance
+         */
+        fun create(savedInstanceState: Bundle?): EasyImagePicker {
             return EasyImagePicker(this, savedInstanceState)
         }
     }
 
+    /**
+     * persist image path so it's possible to recover
+     */
     fun onSaveInstanceState(outState: Bundle) {
         currentPhotoPath?.let {
             outState.putString(CURRENT_PHOTO_PATH_KEY, it)
@@ -107,6 +135,9 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         }
     }
 
+    /**
+     * handle the EasyImagePickers intents, returns `true` is a result is available
+     */
     fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?, activity: Activity): Boolean {
         @Suppress("unused")
         if (this.requestCameraCode == requestCode && resultCode == Activity.RESULT_OK) {
@@ -139,30 +170,32 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         return false
     }
 
+    /**
+     * get the result image uri
+     */
     fun getResultImageUri(): Uri? {
         return currentPhotoPath?.toUri()
     }
 
+    /**
+     * show the dialog or gallery/camera
+     */
     @Suppress("unused")
-    fun start(activity: Activity): EasyImagePicker {
+    fun start(activity: Activity) {
         when (mode) {
             MODE.BOTH ->showPickerDialog(ActivityStarter(activity))
             MODE.GALLERY_ONLY -> startGallery(ActivityStarter(activity))
             MODE.CAMERA_ONLY -> startCamera(ActivityStarter(activity))
         }
-
-        return this
     }
 
     @Suppress("unused")
-    fun start(fragment: Fragment): EasyImagePicker {
+    fun start(fragment: Fragment) {
         when (mode) {
             MODE.BOTH ->showPickerDialog(FragmentStarter(fragment))
             MODE.GALLERY_ONLY -> startGallery(FragmentStarter(fragment))
             MODE.CAMERA_ONLY -> startCamera(FragmentStarter(fragment))
         }
-
-        return this
     }
 
     private fun showPickerDialog(starter: ActivityStarterInterface) {
