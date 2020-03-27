@@ -28,6 +28,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         const val CURRENT_PHOTO_PATH_KEY = "CURRENT_PHOTO_PATH_KEY"
         const val CURRENT_PHOTO_DISPLAY_NAME_KEY = "CURRENT_PHOTO_DISPLAY_NAME_KEY"
         const val DEFAULT_MAX_IMAGE_DIMENSION = 1024
+        const val DEFAULT_COMPRESSION_QUALITY = 90
     }
 
     /**
@@ -44,6 +45,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
     private val requestCameraCode: Int
     private val requestGalleryCode: Int
     private val maxImageDimension: Int
+    private val compressionQuality: Int
     @StyleRes
     private val themeResId: Int
 
@@ -55,6 +57,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         requestCameraCode = builder.cameraRequestCode
         requestGalleryCode = builder.galleryRequestCode
         maxImageDimension = builder.maxImageDimension
+        compressionQuality = builder.compressionQuality
         themeResId = builder.themeResId
 
         currentPhotoPath = savedInstanceState?.getString(CURRENT_PHOTO_PATH_KEY, null)
@@ -72,6 +75,9 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
             private set
 
         var maxImageDimension: Int = DEFAULT_MAX_IMAGE_DIMENSION
+            private set
+
+        var compressionQuality: Int = DEFAULT_COMPRESSION_QUALITY
             private set
 
         var requestCameraCode: Int = DEFAULT_CAMERA_REQUEST_CODE
@@ -95,6 +101,12 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
          */
         fun maxImageDimension(maxImageDimension: Int) =
             apply { this.maxImageDimension = maxImageDimension }
+
+        /**
+         * set the compression quality between 0 and 100
+         */
+        fun compressionQuality(compressionQuality: Int) =
+            apply { this.compressionQuality = compressionQuality }
 
         /**
          * set the theme for the dialog, (only used in `MODE.BOTH`)
@@ -145,7 +157,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
             val outputPath = currentPhotoPath  ?: return false
 
             return try {
-                ImageCompressor.compressImageWithPath(imagePath, outputPath, maxImageDimension)
+                ImageCompressor.compressImageWithPath(imagePath, outputPath, maxImageDimension, compressionQuality)
             } catch (e: Exception) {
                 return false
             }
@@ -161,7 +173,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
             val outputPath = currentPhotoPath  ?: return false
 
             return try {
-                ImageCompressor.compressImageWithResolver(imageUri, outputPath, activity.contentResolver, maxImageDimension)
+                ImageCompressor.compressImageWithResolver(imageUri, outputPath, activity.contentResolver, maxImageDimension, compressionQuality)
             } catch (e: Exception) {
                 false
             }

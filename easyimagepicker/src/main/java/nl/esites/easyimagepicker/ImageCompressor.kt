@@ -16,7 +16,8 @@ object ImageCompressor {
         inputImageUri: Uri,
         outputFilePath: String,
         contentResolver: ContentResolver,
-        maxImageDimension: Int
+        maxImageDimension: Int,
+        compressionQuality: Int
     ): Boolean {
         var inputStream = contentResolver.openInputStream(inputImageUri) ?: return false
 
@@ -67,7 +68,7 @@ object ImageCompressor {
         }
 
         val outputFileOutputStream = FileOutputStream(outputFilePath)
-        srcBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputFileOutputStream)
+        srcBitmap.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputFileOutputStream)
         outputFileOutputStream.close()
 
         return true
@@ -85,7 +86,8 @@ object ImageCompressor {
     fun compressImageWithPath(
         inputImagePath: String,
         outputFilePath: String,
-        maxImageDimension: Int
+        maxImageDimension: Int,
+        compressionQuality: Int
     ): Boolean {
         val dbo = BitmapFactory.Options()
         dbo.inJustDecodeBounds = true
@@ -132,7 +134,7 @@ object ImageCompressor {
         }
 
         val outputFileOutputStream = FileOutputStream(outputFilePath)
-        srcBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputFileOutputStream)
+        srcBitmap.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputFileOutputStream)
         outputFileOutputStream.close()
 
         return true
