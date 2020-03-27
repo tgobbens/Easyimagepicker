@@ -91,7 +91,7 @@ object ImageCompressor {
     ): Boolean {
         val dbo = BitmapFactory.Options()
         dbo.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(inputImagePath)
+        BitmapFactory.decodeFile(inputImagePath, dbo)
 
         val exif = ExifInterface(inputImagePath)
         val rotation =
