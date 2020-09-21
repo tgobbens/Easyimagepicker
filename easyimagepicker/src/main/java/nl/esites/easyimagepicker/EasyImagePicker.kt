@@ -1,15 +1,19 @@
 package nl.esites.easyimagepicker
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -19,11 +23,13 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 class EasyImagePicker private constructor(builder: Builder, savedInstanceState: Bundle?){
 
     companion object {
         const val DEFAULT_CAMERA_REQUEST_CODE = 21251
         const val DEFAULT_GALLERY_REQUEST_CODE = 21252
+        const val DEFAULT_CAMERA_PERMISSION_REQUEST_CODE = 21253
 
         const val CURRENT_PHOTO_PATH_KEY = "CURRENT_PHOTO_PATH_KEY"
         const val CURRENT_PHOTO_DISPLAY_NAME_KEY = "CURRENT_PHOTO_DISPLAY_NAME_KEY"
@@ -61,7 +67,10 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         themeResId = builder.themeResId
 
         currentPhotoPath = savedInstanceState?.getString(CURRENT_PHOTO_PATH_KEY, null)
-        currentPhotoDisplayName = savedInstanceState?.getString(CURRENT_PHOTO_DISPLAY_NAME_KEY, null)
+        currentPhotoDisplayName = savedInstanceState?.getString(
+            CURRENT_PHOTO_DISPLAY_NAME_KEY,
+            null
+        )
     }
 
     class Builder {
@@ -148,6 +157,41 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
     }
 
     /**
+     * handle the result from the permission request, if true is returned the library has handled the request
+     */
+    fun handleOnRequestPermissionsResult(
+        activity: Activity, requestCode: Int, grantResults: IntArray
+    ): Boolean {
+        return handleOnRequestPermissionsResult(ActivityStarter(activity), requestCode, grantResults)
+    }
+
+    /**
+     * handle the result from the permission request, if true is returned the library has handled the request
+     */
+    fun handleOnRequestPermissionsResult(
+        fragment: Fragment, requestCode: Int, grantResults: IntArray
+    ): Boolean {
+        return handleOnRequestPermissionsResult(
+            FragmentStarter(fragment),
+            requestCode,
+            grantResults
+        )
+    }
+
+    private fun handleOnRequestPermissionsResult(
+        activityStarterInterface: ActivityStarterInterface, requestCode: Int, grantResults: IntArray
+    ): Boolean {
+        if (requestCode == DEFAULT_CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera(activityStarterInterface)
+            }
+            // no permission cannot start camera as it would crash
+            return true
+        }
+        return false
+    }
+
+    /**
      * handle the EasyImagePickers intents, returns `true` is a result is available
      */
     fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?, activity: Activity): Boolean {
@@ -157,7 +201,12 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
             val outputPath = currentPhotoPath  ?: return false
 
             return try {
-                ImageCompressor.compressImageWithPath(imagePath, outputPath, maxImageDimension, compressionQuality)
+                ImageCompressor.compressImageWithPath(
+                    imagePath,
+                    outputPath,
+                    maxImageDimension,
+                    compressionQuality
+                )
             } catch (e: Exception) {
                 return false
             }
@@ -173,7 +222,13 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
             val outputPath = currentPhotoPath  ?: return false
 
             return try {
-                ImageCompressor.compressImageWithResolver(imageUri, outputPath, activity.contentResolver, maxImageDimension, compressionQuality)
+                ImageCompressor.compressImageWithResolver(
+                    imageUri,
+                    outputPath,
+                    activity.contentResolver,
+                    maxImageDimension,
+                    compressionQuality
+                )
             } catch (e: Exception) {
                 false
             }
@@ -195,7 +250,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
     @Suppress("unused")
     fun start(activity: Activity) {
         when (mode) {
-            MODE.BOTH ->showPickerDialog(ActivityStarter(activity))
+            MODE.BOTH -> showPickerDialog(ActivityStarter(activity))
             MODE.GALLERY_ONLY -> startGallery(ActivityStarter(activity))
             MODE.CAMERA_ONLY -> startCamera(ActivityStarter(activity))
         }
@@ -204,7 +259,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
     @Suppress("unused")
     fun start(fragment: Fragment) {
         when (mode) {
-            MODE.BOTH ->showPickerDialog(FragmentStarter(fragment))
+            MODE.BOTH -> showPickerDialog(FragmentStarter(fragment))
             MODE.GALLERY_ONLY -> startGallery(FragmentStarter(fragment))
             MODE.CAMERA_ONLY -> startCamera(FragmentStarter(fragment))
         }
@@ -249,7 +304,35 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
         activityStarterInterface.startActivityForResult(intent, requestGalleryCode)
     }
 
+    /**
+     * Check if a permission is present in the manifest
+     */
+    private fun hasPermissionInManifest(context: Context, @Suppress("SameParameterValue") permissionName: String): Boolean {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
+            return packageInfo.requestedPermissions?.contains(permissionName) == true
+        } catch (e: PackageManager.NameNotFoundException) {
+        }
+        return false
+    }
+
     private fun startCamera(activityStarterInterface: ActivityStarterInterface) {
+        /**
+         * If the Camera permission is present in the manifest the Camera permission should also be granted
+         * otherwise a Security exception will be thrown
+         *
+         * see:
+         * https://developer.android.com/reference/android/provider/MediaStore.html#ACTION_IMAGE_CAPTURE
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            hasPermissionInManifest(activityStarterInterface.getContext(), Manifest.permission.CAMERA) &&
+            ContextCompat.checkSelfPermission(activityStarterInterface.getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            activityStarterInterface.requestPermissions(arrayOf(Manifest.permission.CAMERA), DEFAULT_CAMERA_PERMISSION_REQUEST_CODE)
+            return
+        }
+
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(activityStarterInterface.getContext().packageManager)?.also {
@@ -270,7 +353,10 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
                     )
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
 
-                    activityStarterInterface.startActivityForResult(takePictureIntent, requestCameraCode)
+                    activityStarterInterface.startActivityForResult(
+                        takePictureIntent,
+                        requestCameraCode
+                    )
                 }
             }
         }

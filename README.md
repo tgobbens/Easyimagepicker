@@ -17,7 +17,7 @@ allprojects {
 ```
 
 ```groovy
-implementation 'com.github.tgobbens:Easyimagepicker:1.0.4'
+implementation 'com.github.tgobbens:Easyimagepicker:1.0.5'
 ```
 
 2. Code setup
@@ -70,6 +70,24 @@ this, if `true` is returned an uri to the image is available and can be get usin
         }
     }
 ```
+
+If your app has the permission `android.permission.CAMERA` is in the merged manifest, the permission 
+`android.permission.CAMERA` should be granted when using the camera. The library will request this 
+permission, to make this function correctly implemented the `onRequestPermissionsResult`.
+
+```kotlin
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        easyImagePicker.handleOnRequestPermissionsResult(this, requestCode, grantResults)
+    }
+```
+
+
 
 Changing / localize text
 
