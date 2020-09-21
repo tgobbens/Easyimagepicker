@@ -242,7 +242,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
     }
 
     private fun startGallery(activityStarterInterface: ActivityStarterInterface) {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "image/*"
             addCategory(Intent.CATEGORY_OPENABLE)
         }
