@@ -17,7 +17,7 @@ allprojects {
 ```
 
 ```groovy
-implementation 'com.github.tgobbens:Easyimagepicker:1.0.6'
+implementation 'com.github.tgobbens:Easyimagepicker:1.0.7'
 ```
 
 2. Code setup
