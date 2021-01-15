@@ -7,7 +7,6 @@ import android.graphics.Matrix
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import java.io.FileOutputStream
-import kotlin.math.max
 
 
 object ImageCompressor {
@@ -27,35 +26,16 @@ object ImageCompressor {
         inputStream.close()
 
         val exif = ExifInterface(inputStream)
-        val rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        val rotation = exif.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
         val rotationInDegrees = exifToDegrees(rotation)
 
-        val rotatedWidth: Int
-        val rotatedHeight: Int
-
-        if (rotationInDegrees == 90 || rotationInDegrees == 270) {
-            rotatedWidth = dbo.outHeight
-            rotatedHeight = dbo.outWidth
-        } else {
-            rotatedWidth = dbo.outWidth
-            rotatedHeight = dbo.outHeight
-        }
-
-        var srcBitmap: Bitmap
         inputStream = contentResolver.openInputStream(inputImageUri) ?: return false
 
-        if (rotatedWidth > maxImageDimension || rotatedHeight > maxImageDimension) {
-            val widthRatio = rotatedWidth.toFloat() / maxImageDimension.toFloat()
-            val heightRatio =rotatedHeight.toFloat() / maxImageDimension.toFloat()
-            val maxRatio = max(widthRatio, heightRatio)
-
-            val options = BitmapFactory.Options()
-            options.inSampleSize = maxRatio.toInt()
-
-            srcBitmap = BitmapFactory.decodeStream(inputStream, null, options) ?: return false
-        } else {
-            srcBitmap = BitmapFactory.decodeStream(inputStream)
-        }
+        var srcBitmap = BitmapFactory.decodeStream(inputStream)
+        srcBitmap = resizeBitmap(srcBitmap, maxImageDimension)
         inputStream.close()
 
         if (rotationInDegrees > 0) {
@@ -74,15 +54,6 @@ object ImageCompressor {
         return true
     }
 
-    private fun exifToDegrees(exifOrientation: Int): Int {
-        return when (exifOrientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> 90
-            ExifInterface.ORIENTATION_ROTATE_180 -> 180
-            ExifInterface.ORIENTATION_ROTATE_270 -> 270
-            else -> 0
-        }
-    }
-
     fun compressImageWithPath(
         inputImagePath: String,
         outputFilePath: String,
@@ -98,31 +69,8 @@ object ImageCompressor {
             exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
         val rotationInDegrees = exifToDegrees(rotation)
 
-        val rotatedWidth: Int
-        val rotatedHeight: Int
-
-        if (rotationInDegrees == 90 || rotationInDegrees == 270) {
-            rotatedWidth = dbo.outHeight
-            rotatedHeight = dbo.outWidth
-        } else {
-            rotatedWidth = dbo.outWidth
-            rotatedHeight = dbo.outHeight
-        }
-
-        var srcBitmap: Bitmap
-
-        if (rotatedWidth > maxImageDimension || rotatedHeight > maxImageDimension) {
-            val widthRatio = rotatedWidth.toFloat() / maxImageDimension.toFloat()
-            val heightRatio = rotatedHeight.toFloat() / maxImageDimension.toFloat()
-            val maxRatio = max(widthRatio, heightRatio)
-
-            val options = BitmapFactory.Options()
-            options.inSampleSize = maxRatio.toInt()
-
-            srcBitmap = BitmapFactory.decodeFile(inputImagePath, options)
-        } else {
-            srcBitmap = BitmapFactory.decodeFile(inputImagePath)
-        }
+        var srcBitmap = BitmapFactory.decodeFile(inputImagePath)
+        srcBitmap = resizeBitmap(srcBitmap, maxImageDimension)
 
         if (rotationInDegrees > 0) {
             val matrix = Matrix()
@@ -132,11 +80,37 @@ object ImageCompressor {
                 srcBitmap.height, matrix, true
             )
         }
-
         val outputFileOutputStream = FileOutputStream(outputFilePath)
         srcBitmap.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputFileOutputStream)
         outputFileOutputStream.close()
 
         return true
+    }
+
+    private fun resizeBitmap(source: Bitmap, maxLength: Int): Bitmap {
+        if (source.height >= source.width) {
+            if (source.height <= maxLength) { // if image already smaller than the required height
+                return source
+            }
+            val aspectRatio = source.width.toDouble() / source.height.toDouble()
+            val targetWidth = (maxLength * aspectRatio).toInt()
+            return Bitmap.createScaledBitmap(source, targetWidth, maxLength, true)
+        } else {
+            if (source.width <= maxLength) { // if image already smaller than the required height
+                return source
+            }
+            val aspectRatio = source.height.toDouble() / source.width.toDouble()
+            val targetHeight = (maxLength * aspectRatio).toInt()
+            return Bitmap.createScaledBitmap(source, maxLength, targetHeight, true)
+        }
+    }
+
+    private fun exifToDegrees(exifOrientation: Int): Int {
+        return when (exifOrientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            else -> 0
+        }
     }
 }
