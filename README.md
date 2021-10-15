@@ -17,7 +17,7 @@ allprojects {
 ```
 
 ```groovy
-implementation 'com.github.tgobbens:Easyimagepicker:1.0.7'
+implementation 'com.github.tgobbens:Easyimagepicker:1.0.8'
 ```
 
 2. Code setup
@@ -86,8 +86,6 @@ permission, to make this function correctly implemented the `onRequestPermission
         easyImagePicker.handleOnRequestPermissionsResult(this, requestCode, grantResults)
     }
 ```
-
-
 
 Changing / localize text
 
