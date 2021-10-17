@@ -252,7 +252,7 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
 
     @Suppress("unused")
     fun start(fragment: Fragment, withMode: MODE? = null) {
-        when (mode ?: this.mode) {
+        when (withMode ?: this.mode) {
             MODE.BOTH -> showPickerDialog(FragmentStarter(fragment))
             MODE.GALLERY_ONLY -> startGallery(FragmentStarter(fragment))
             MODE.CAMERA_ONLY -> startCamera(FragmentStarter(fragment))
