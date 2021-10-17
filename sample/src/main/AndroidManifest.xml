@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nl.esites.easyimagepicker">
+    package="nl.esites.easyimagepickersample">
 
     <!-- due to an issues with camera2 activity an permission should always be present -->
     <uses-permission android:name="android.permission.INTERNET" />

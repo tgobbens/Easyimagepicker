@@ -7,8 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import nl.esites.easyimagepicker.EasyImagePicker
-import nl.esites.easyimagepicker.R
-import nl.esites.easyimagepicker.databinding.MainFragmentBinding
+import nl.esites.easyimagepickersample.R
+import nl.esites.easyimagepickersample.databinding.MainFragmentBinding
 
 class MainFragment : Fragment() {
 

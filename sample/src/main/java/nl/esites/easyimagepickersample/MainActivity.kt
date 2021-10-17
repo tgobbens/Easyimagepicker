@@ -2,7 +2,6 @@ package nl.esites.easyimagepickersample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import nl.esites.easyimagepicker.R
 import nl.esites.easyimagepickersample.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {

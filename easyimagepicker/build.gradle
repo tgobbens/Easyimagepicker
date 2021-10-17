@@ -50,7 +50,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.tgobbens'
                 artifactId = 'Easyimagepicker'
-                version = '1.0.11'
+                version = '1.0.12'
             }
         }
     }
