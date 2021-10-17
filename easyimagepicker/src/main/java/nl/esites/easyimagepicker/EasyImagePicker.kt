@@ -60,8 +60,8 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
 
     init {
         mode = builder.mode
-        requestCameraCode = builder.cameraRequestCode
-        requestGalleryCode = builder.galleryRequestCode
+        requestCameraCode = builder.requestCameraCode
+        requestGalleryCode = builder.requestGalleryCode
         maxImageDimension = builder.maxImageDimension
         compressionQuality = builder.compressionQuality
         themeResId = builder.themeResId
@@ -75,12 +75,6 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
 
     class Builder {
         var mode: MODE = MODE.BOTH
-            private set
-
-        var cameraRequestCode: Int = DEFAULT_CAMERA_REQUEST_CODE
-            private set
-
-        var galleryRequestCode: Int = DEFAULT_GALLERY_REQUEST_CODE
             private set
 
         var maxImageDimension: Int = DEFAULT_MAX_IMAGE_DIMENSION
@@ -248,8 +242,8 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
      * show the dialog or gallery/camera
      */
     @Suppress("unused")
-    fun start(activity: Activity) {
-        when (mode) {
+    fun start(activity: Activity, withMode: MODE? = null) {
+        when (withMode ?: this.mode) {
             MODE.BOTH -> showPickerDialog(ActivityStarter(activity))
             MODE.GALLERY_ONLY -> startGallery(ActivityStarter(activity))
             MODE.CAMERA_ONLY -> startCamera(ActivityStarter(activity))
@@ -257,8 +251,8 @@ class EasyImagePicker private constructor(builder: Builder, savedInstanceState: 
     }
 
     @Suppress("unused")
-    fun start(fragment: Fragment) {
-        when (mode) {
+    fun start(fragment: Fragment, withMode: MODE? = null) {
+        when (mode ?: this.mode) {
             MODE.BOTH -> showPickerDialog(FragmentStarter(fragment))
             MODE.GALLERY_ONLY -> startGallery(FragmentStarter(fragment))
             MODE.CAMERA_ONLY -> startCamera(FragmentStarter(fragment))
