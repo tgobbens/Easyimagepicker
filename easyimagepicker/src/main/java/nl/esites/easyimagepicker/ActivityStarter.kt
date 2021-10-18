@@ -1,48 +1,121 @@
 package nl.esites.easyimagepicker
 
-import android.app.Activity
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
-import androidx.annotation.NonNull
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
+/**
+ * helper class to allow fragments and activities to use this library
+ */
 internal interface ActivityStarterInterface {
-    fun startActivityForResult(intent: Intent, requestCode: Int)
 
-    fun requestPermissions(permissions: Array<String>, requestCode: Int)
+    fun requestCameraPermission()
 
     fun getContext(): Context
+
+    fun startCamera(intent: Intent)
+
+    fun startGallery(intent: Intent)
 }
 
-internal class ActivityStarter(private val activity: Activity) : ActivityStarterInterface {
+internal class ActivityStarter(
+    private val activity: AppCompatActivity,
+    cameraCallback: (ActivityResult) -> Unit,
+    galleryCallback: (ActivityResult) -> Unit,
+    cameraPermissionCallback: (Boolean) -> Unit,
+) : ActivityStarterInterface {
+
+    private val getContentCamera =
+        activity.registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            cameraCallback(activityResult)
+        }
+
+    private val getContentGallery =
+        activity.registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            galleryCallback(activityResult)
+        }
+
+    private val requestPermissionLauncher =
+        activity.registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            cameraPermissionCallback(isGranted)
+        }
+
     override fun getContext(): Context {
         return activity
     }
 
-    override fun startActivityForResult(intent: Intent, requestCode: Int) {
-        activity.startActivityForResult(intent, requestCode)
+    override fun startCamera(intent: Intent) {
+        getContentCamera.launch(intent)
     }
 
-    override fun requestPermissions(permissions: Array<String>, requestCode: Int) {
+    override fun startGallery(intent: Intent) {
+        getContentGallery.launch(intent)
+    }
+
+    override fun requestCameraPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            activity.requestPermissions(permissions, requestCode)
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 }
 
-internal class FragmentStarter(private val fragment: Fragment) : ActivityStarterInterface {
+internal class FragmentStarter(
+    private val fragment: Fragment,
+    cameraCallback: (ActivityResult) -> Unit,
+    galleryCallback: (ActivityResult) -> Unit,
+    cameraPermissionCallback: (Boolean) -> Unit,
+) : ActivityStarterInterface {
+
+    private val getContentCamera =
+        fragment.registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            cameraCallback(activityResult)
+        }
+
+    private val getContentGallery =
+        fragment.registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            galleryCallback(activityResult)
+        }
+
+    private val requestPermissionLauncher =
+        fragment.requireActivity().registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            cameraPermissionCallback(isGranted)
+        }
+
     override fun getContext(): Context {
         return fragment.requireContext()
     }
 
-    override fun startActivityForResult(intent: Intent, requestCode: Int) {
-        fragment.startActivityForResult(intent, requestCode)
+    override fun startCamera(intent: Intent) {
+        getContentCamera.launch(intent)
     }
 
-    override fun requestPermissions(permissions: Array<String>, requestCode: Int) {
+    override fun startGallery(intent: Intent) {
+        getContentGallery.launch(intent)
+    }
+
+    override fun requestCameraPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            fragment.requestPermissions(permissions, requestCode)
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 }

@@ -1,11 +1,11 @@
 package nl.esites.easyimagepickersample.ui.main
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import nl.esites.easyimagepicker.EasyImagePicker
 import nl.esites.easyimagepickersample.R
 import nl.esites.easyimagepickersample.databinding.MainFragmentBinding
@@ -21,16 +21,25 @@ class MainFragment : Fragment() {
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        easyImagePicker = EasyImagePicker.Builder()
+            .themeResId(R.style.AppThemeDialog)
+            .create(savedInstanceState, this) { uri ->
+                if (uri == null) {
+                    Toast.makeText(requireContext(), R.string.no_image_selected, Toast.LENGTH_SHORT).show()
+                }
+
+                binding.imageView.setImageURI(uri)
+            }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = MainFragmentBinding.inflate(layoutInflater, container, false)
-
-        easyImagePicker = EasyImagePicker.Builder()
-            .mode(EasyImagePicker.MODE.BOTH)
-            .themeResId(R.style.AppThemeDialog)
-            .create(savedInstanceState)
 
         return binding.root
     }
@@ -45,7 +54,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.openPickerButton.setOnClickListener {
-            easyImagePicker.start(this)
+            easyImagePicker.start(EasyImagePicker.MODE.BOTH)
         }
     }
 
@@ -53,25 +62,5 @@ class MainFragment : Fragment() {
         super.onSaveInstanceState(outState)
 
         easyImagePicker.onSaveInstanceState(outState)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (easyImagePicker.handleActivityResult(requestCode, resultCode, data, requireActivity())) {
-            val uri = easyImagePicker.getResultImageUri()
-
-            binding.imageView.setImageURI(uri)
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        easyImagePicker.handleOnRequestPermissionsResult(this, requestCode, grantResults)
     }
 }
