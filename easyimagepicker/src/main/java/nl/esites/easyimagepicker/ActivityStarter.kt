@@ -95,7 +95,7 @@ internal class FragmentStarter(
         }
 
     private val requestPermissionLauncher =
-        fragment.requireActivity().registerForActivityResult(
+        fragment.registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             cameraPermissionCallback(isGranted)
