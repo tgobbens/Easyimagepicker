@@ -5,12 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.activity.result.PickVisualMediaRequest
 
 /**
  * helper class to allow fragments and activities to use this library
@@ -29,10 +28,9 @@ internal interface ActivityStarterInterface {
 internal class ActivityStarter(
     private val activity: AppCompatActivity,
     cameraCallback: (ActivityResult) -> Unit,
-    galleryCallback: (ActivityResult) -> Unit,
+    galleryCallback: (Uri?) -> Unit,
     cameraPermissionCallback: (Boolean) -> Unit,
 ) : ActivityStarterInterface {
-
     private val getContentCamera =
         activity.registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -40,12 +38,9 @@ internal class ActivityStarter(
             cameraCallback(activityResult)
         }
 
-    private val getContentGallery =
-        activity.registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { activityResult ->
-            galleryCallback(activityResult)
-        }
+    private val getContentGallery = activity.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        galleryCallback(uri)
+    }
 
     private val requestPermissionLauncher =
         activity.registerForActivityResult(
@@ -63,7 +58,7 @@ internal class ActivityStarter(
     }
 
     override fun startGallery(intent: Intent) {
-        getContentGallery.launch(intent)
+        getContentGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
     override fun requestCameraPermission() {
@@ -76,7 +71,7 @@ internal class ActivityStarter(
 internal class FragmentStarter(
     private val fragment: Fragment,
     cameraCallback: (ActivityResult) -> Unit,
-    galleryCallback: (ActivityResult) -> Unit,
+    galleryCallback: (Uri?) -> Unit,
     cameraPermissionCallback: (Boolean) -> Unit,
 ) : ActivityStarterInterface {
 
@@ -87,12 +82,9 @@ internal class FragmentStarter(
             cameraCallback(activityResult)
         }
 
-    private val getContentGallery =
-        fragment.registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { activityResult ->
-            galleryCallback(activityResult)
-        }
+    private val getContentGallery = fragment.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        galleryCallback(uri)
+    }
 
     private val requestPermissionLauncher =
         fragment.registerForActivityResult(
@@ -110,7 +102,7 @@ internal class FragmentStarter(
     }
 
     override fun startGallery(intent: Intent) {
-        getContentGallery.launch(intent)
+        getContentGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
     override fun requestCameraPermission() {

@@ -218,14 +218,11 @@ class EasyImagePicker private constructor(
      * handle the result from a gallery pick
      */
     private fun handleActivityResultGallery(
-        result: ActivityResult,
+        uri: Uri?,
         context: Context
     ): Uri? {
-        if (result.resultCode != Activity.RESULT_OK) {
-            return null
-        }
+        uri ?: return null
 
-        val imageUri = result.data?.data ?: return null
         try {
             createImageFile(context)
         } catch (e: Exception) {
@@ -235,7 +232,7 @@ class EasyImagePicker private constructor(
         val outputPath = currentPhotoPath ?: return null
         try {
             ImageCompressor.compressImageWithResolver(
-                imageUri,
+                uri,
                 outputPath,
                 context.contentResolver,
                 maxImageDimension,
